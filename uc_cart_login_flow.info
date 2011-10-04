@@ -1,0 +1,7 @@
+name = Ubercart Cart Login Flow
+core = 6.x
+
+package = Ubercart - extra
+
+dependencies[] = uc_cart
+

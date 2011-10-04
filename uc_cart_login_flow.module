@@ -1,0 +1,59 @@
+<?php
+/** @file
+ * UC Cart Login Flow that changes the behavior of the cart once the user logs in.
+ */
+
+function uc_cart_login_flow_form_user_login_alter(&$form, &$form_state) {
+  $form['cid'] = array(
+    '#type' => 'hidden',
+    '#value' => $_SESSION['uc_cart_id'],
+  );
+  return $form;
+}
+
+function uc_cart_login_flow_form_user_login_block_alter(&$form, &$form_state) {
+  $form['cid'] = array(
+    '#type' => 'hidden',
+    '#value' => $_SESSION['uc_cart_id'],
+  );
+  return $form;
+}
+
+function uc_cart_login_flow_user($op, &$edit, &$account, $category = NULL) {
+  global $user;
+  switch ($op) {
+    case 'login':
+      if ($_REQUEST['q'] === 'cart/checkout') {
+        _uc_cart_login_flow_associate_cart($account, $edit['cid']);
+      }
+      elseif (isset($_REQUEST['destination']) &&
+          $_REQUEST['destination'] == 'cart/checkout') {
+        _uc_cart_login_flow_associate_cart($account, $edit['cid']);
+      }
+      else {
+        _uc_cart_login_flow_discard_cart($account, $edit['cid']);
+      }
+      break;
+  }
+}
+
+/**
+ * Associate cart when the user logs in during checkout.
+ */
+function _uc_cart_login_flow_associate_cart($user, $cid) {
+  uc_cart_empty($user->uid);
+  // this avoids uc_cart_login_update to be called.
+  db_query("UPDATE {uc_cart_products} SET cart_id = %d WHERE cart_id = '%s'", $user->uid, $cid);
+  unset($_SESSION['uc_cart_id']);
+}
+
+/**
+ * Discard cart when the user logs in.
+ */
+function _uc_cart_login_flow_discard_cart($user, $cid) {
+  uc_cart_empty($cid);
+  db_query("DELETE FROM {uc_cart_products} WHERE cart_id = '%s'", $cid);
+  unset($_SESSION['uc_cart_id']);
+}
+
+

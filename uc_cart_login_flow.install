@@ -1,0 +1,11 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the UC Cart Login Flow module.
+ */
+
+function uc_cart_login_flow_install() {
+  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'uc_cart'"));
+  db_query("UPDATE {system} SET weight = %d WHERE name = 'uc_cart_login_flow'", $weight - 1);
+}
