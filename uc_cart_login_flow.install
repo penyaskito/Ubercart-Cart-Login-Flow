@@ -2,9 +2,14 @@
 
 /**
  * @file
- * Install, update and uninstall functions for the UC Cart Login Flow module.
+ * Install, update and uninstall functions for the Ubercart Cart Login Flow module.
  */
 
+/**
+ * Implements hook_install().
+ * The weight of the module needs to be less than uc_cart's weight, so we can
+ * intercept the login hook before it has modified the logged in cart.
+ */
 function uc_cart_login_flow_install() {
   $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'uc_cart'"));
   db_query("UPDATE {system} SET weight = %d WHERE name = 'uc_cart_login_flow'", $weight - 1);

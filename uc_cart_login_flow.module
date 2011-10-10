@@ -3,6 +3,11 @@
  * UC Cart Login Flow that changes the behavior of the cart once the user logs in.
  */
 
+/**
+ * Implements hook_FORM_alter().
+ * We add to the form a reference to the session cart, so once we log in we can
+ * associate it with the logged in user.
+ */
 function uc_cart_login_flow_form_user_login_alter(&$form, &$form_state) {
   $form['cid'] = array(
     '#type' => 'hidden',
@@ -11,6 +16,11 @@ function uc_cart_login_flow_form_user_login_alter(&$form, &$form_state) {
   return $form;
 }
 
+/**
+ * Implements hook_FORM_alter().
+ * We add to the form a reference to the session cart, so once we log in we can
+ * associate it with the logged in user.
+ */
 function uc_cart_login_flow_form_user_login_block_alter(&$form, &$form_state) {
   $form['cid'] = array(
     '#type' => 'hidden',
@@ -19,6 +29,11 @@ function uc_cart_login_flow_form_user_login_block_alter(&$form, &$form_state) {
   return $form;
 }
 
+/**
+ * Implements hook_user().
+ * Depending on the form that sent the login request, we associate the existing anonymous cart or we assign it to the
+ * logged in user.
+ */
 function uc_cart_login_flow_user($op, &$edit, &$account, $category = NULL) {
   global $user;
   switch ($op) {
