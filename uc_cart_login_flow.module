@@ -1,5 +1,6 @@
 <?php
-/** @file
+/**
+ * @file
  * UC Cart Login Flow that changes the behavior of the cart once the user logs in.
  */
 
