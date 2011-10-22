@@ -1,0 +1,107 @@
+<?php
+
+/**
+ * @file
+ * UC Cart Login Flow tests tests.
+ */
+
+// Ensure UbercartTestHelper is available.
+module_load_include('test', 'uc_store', 'uc_store', 'uc_cart');
+
+/**
+ * Tests the cart and checkout functionality.
+ */
+class UCCartLoginFlowTest extends UbercartTestHelper {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'UC Cart Login Flow',
+      'description' => 'Ensures the cart and checkout process is functioning as desired when the users log in.',
+      'group' => 'Ubercart',
+    );
+  }
+  
+  function setUp() {
+    parent::setUp(array('uc_cart_login_flow'));
+  }
+
+  function testLoginAnywhereAndRetrieveTheOldCart() {
+    // Add two items of a product as an authenticated user.
+    $this->drupalLogin($this->customer);
+    $this->drupalPost('node/' . $this->product->nid, array(), t('Add to cart'));
+    $this->drupalPost('node/' . $this->product->nid, array(), t('Add to cart'));
+
+    // Check that the two items are there.
+    $this->drupalGet('cart');
+    $this->assertText($this->product->title, t('The product is in the cart when we added it.'));
+    $this->assertFieldByName('items[0][qty]', 2, t('The product quantity is 2.'));
+
+    // Logout
+    $this->drupalLogout();
+                                            
+    // Add one item to the cart as anonymous.
+    $this->drupalPost('node/' . $this->product->nid, array(), t('Add to cart'));
+    $this->drupalGet('cart');
+    $this->assertText($this->product->title, t('The product is in the anonymous cart when we added it.'));
+    $this->assertFieldByName('items[0][qty]', 1, t('The product quantity is 1.'));
+ 
+    // Login and check if we have two units, because the anonymous has been discarded.
+    $this->drupalLogin($this->customer);
+    $this->drupalGet('cart');
+    $this->assertText($this->product->title, t('The cart contains the product added in a previous session.'));
+    $this->assertFieldByName('items[0][qty]', 2, t('The product quantity is the same that was on the previous session: 2.'));
+  }
+
+  function testLoginInCheckoutAndDiscardTheOldCart() {
+    // Add two items of a product as an authenticated user.
+    $this->drupalLogin($this->customer);
+    $this->drupalPost('node/' . $this->product->nid, array(), t('Add to cart'));
+    $this->drupalPost('node/' . $this->product->nid, array(), t('Add to cart'));
+
+    // Check that the two items are there.
+    $this->drupalGet('cart');
+    $this->assertText($this->product->title, t('The product is in the cart when we added it.'));
+    $this->assertFieldByName('items[0][qty]', 2, t('The product quantity is 2.'));
+
+    // Logout
+    $this->drupalLogout();
+                                            
+    // Add one item to the cart as anonymous.
+    $this->drupalPost('node/' . $this->product->nid, array(), t('Add to cart'));
+    $this->drupalGet('cart');
+    $this->assertText($this->product->title, t('The product is in the anonymous cart when we added it.'));
+    $this->assertFieldByName('items[0][qty]', 1, t('The product quantity is 1.'));
+ 
+    // Login and check if we have two units, because the anonymous has been discarded.
+    $this->drupalLoginWithDestination($this->customer, 'cart/checkout');
+    $this->drupalGet('cart');
+    $this->assertText($this->product->title, t('The cart contains the product added in the anonymous session.'));
+    $this->assertFieldByName('items[0][qty]', 1, t('The product quantity is the same that was on the anonymous session: 1.'));
+  } 
+
+  function drupalLoginWithDestination(stdClass $user, $destination = '') {
+    if ($this->loggedInUser) {
+      $this->drupalLogout();
+    }
+
+    $edit = array(
+      'name' => $user->name, 
+      'pass' => $user->pass_raw,
+    );
+
+    $options = array(
+      'destination' => $destination,
+    );
+
+    $this->drupalPost('user', $edit, t('Log in'), array('query' => $options,));
+
+    // If a "log out" link appears on the page, it is almost certainly because
+    // the login was successful.
+    $pass = $this->assertLink(t('Log out'), 0, t('User %name successfully logged in.', array('%name' => $user->name)), t('User login'));
+
+    if ($pass) {
+      $this->loggedInUser = $user;
+    }
+  }
+}
+
