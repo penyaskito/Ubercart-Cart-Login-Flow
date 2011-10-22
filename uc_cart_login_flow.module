@@ -10,10 +10,12 @@
  * associate it with the logged in user.
  */
 function uc_cart_login_flow_form_user_login_alter(&$form, &$form_state) {
-  $form['cid'] = array(
-    '#type' => 'hidden',
-    '#value' => $_SESSION['uc_cart_id'],
-  );
+  if (isset($_SESSION['uc_cart_id'])) {
+    $form['cid'] = array(
+      '#type' => 'hidden',
+      '#value' => $_SESSION['uc_cart_id'],
+    );
+  }
   return $form;
 }
 
@@ -23,10 +25,12 @@ function uc_cart_login_flow_form_user_login_alter(&$form, &$form_state) {
  * associate it with the logged in user.
  */
 function uc_cart_login_flow_form_user_login_block_alter(&$form, &$form_state) {
-  $form['cid'] = array(
-    '#type' => 'hidden',
-    '#value' => $_SESSION['uc_cart_id'],
-  );
+  if (isset($_SESSION['uc_cart_id'])) {
+    $form['cid'] = array(
+      '#type' => 'hidden',
+      '#value' => $_SESSION['uc_cart_id'],
+    );
+  }
   return $form;
 }
 
@@ -39,14 +43,20 @@ function uc_cart_login_flow_user($op, &$edit, &$account, $category = NULL) {
   global $user;
   if ($op == 'login') {
     if ($_REQUEST['q'] == 'cart/checkout') {
-      _uc_cart_login_flow_associate_cart($account, $edit['cid']);
+      if (isset($edit['cid'])) {
+        _uc_cart_login_flow_associate_cart($account, $edit['cid']);
+      }
     }
     elseif (isset($_REQUEST['destination']) &&
       $_REQUEST['destination'] == 'cart/checkout') {
-      _uc_cart_login_flow_associate_cart($account, $edit['cid']);
+        if (isset($edit['cid'])) {
+          _uc_cart_login_flow_associate_cart($account, $edit['cid']);
+        }
     }
     else {
-      _uc_cart_login_flow_discard_cart($account, $edit['cid']);
+      if (isset($edit['cid'])) {
+        _uc_cart_login_flow_discard_cart($account, $edit['cid']);
+      }
     }
   }
 }
