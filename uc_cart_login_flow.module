@@ -36,8 +36,8 @@ function uc_cart_login_flow_form_user_login_block_alter(&$form, &$form_state) {
 
 /**
  * Implements hook_user().
- * Depending on the form that sent the login request, we associate the existing anonymous cart or we assign it to the
- * logged in user.
+ * Depending on the form that sent the login request, we associate the existing
+ * anonymous cart or we assign it to the logged in user.
  */
 function uc_cart_login_flow_user($op, &$edit, &$account, $category = NULL) {
   global $user;
