@@ -35,28 +35,26 @@ function uc_cart_login_flow_form_user_login_block_alter(&$form, &$form_state) {
 }
 
 /**
- * Implements hook_user().
+ * Implements hook_user_login().
  * Depending on the form that sent the login request, we associate the existing
  * anonymous cart or we assign it to the logged in user.
  */
-function uc_cart_login_flow_user($op, &$edit, &$account, $category = NULL) {
+function uc_cart_login_flow_user_login(&$edit, &$account) {
   global $user;
-  if ($op == 'login') {
-    if ($_REQUEST['q'] == 'cart/checkout') {
-      if (isset($edit['cid'])) {
-        _uc_cart_login_flow_associate_cart($account, $edit['cid']);
-      }
+  if ($_GET['q'] == 'cart/checkout') {
+    if (isset($edit['input']['cid'])) {
+      _uc_cart_login_flow_associate_cart($account, $edit['input']['cid']);
     }
-    elseif (isset($_REQUEST['destination']) &&
-      $_REQUEST['destination'] == 'cart/checkout') {
-        if (isset($edit['cid'])) {
-          _uc_cart_login_flow_associate_cart($account, $edit['cid']);
-        }
-    }
-    else {
-      if (isset($edit['cid'])) {
-        _uc_cart_login_flow_discard_cart($account, $edit['cid']);
+  }
+  elseif (isset($_GET['destination']) &&
+    $_GET['destination'] == 'cart/checkout') {
+      if (isset($edit['input']['cid'])) {
+        _uc_cart_login_flow_associate_cart($account, $edit['input']['cid']);
       }
+  }
+  else {
+    if (isset($edit['input']['cid'])) {
+      _uc_cart_login_flow_discard_cart($account, $edit['input']['cid']);
     }
   }
 }
@@ -67,7 +65,13 @@ function uc_cart_login_flow_user($op, &$edit, &$account, $category = NULL) {
 function _uc_cart_login_flow_associate_cart($user, $cid) {
   uc_cart_empty($user->uid);
   // this avoids uc_cart_login_update to be called.
-  db_query("UPDATE {uc_cart_products} SET cart_id = %d WHERE cart_id = '%s'", $user->uid, $cid);
+  db_update('uc_cart_products')
+    ->fields(array(
+      'cart_id' => $user->uid,
+    ))
+    ->condition('cart_id', $cid)
+    ->execute();
+
   unset($_SESSION['uc_cart_id']);
 }
 
@@ -76,7 +80,9 @@ function _uc_cart_login_flow_associate_cart($user, $cid) {
  */
 function _uc_cart_login_flow_discard_cart($user, $cid) {
   uc_cart_empty($cid);
-  db_query("DELETE FROM {uc_cart_products} WHERE cart_id = '%s'", $cid);
+  db_delete('uc_cart_products')
+    ->condition('cart_id', $cid)
+    ->execute();
   unset($_SESSION['uc_cart_id']);
 }
 

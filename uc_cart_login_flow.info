@@ -1,7 +1,9 @@
 name = Ubercart Cart Login Flow
-core = 6.x
+core = 7.x
 
 package = Ubercart - extra
+
+files[] = uc_cart_login_flow.test
 
 dependencies[] = uc_cart
 

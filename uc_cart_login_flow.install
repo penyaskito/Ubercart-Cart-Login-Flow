@@ -11,6 +11,13 @@
  * intercept the login hook before it has modified the logged in cart.
  */
 function uc_cart_login_flow_install() {
-  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'uc_cart'"));
-  db_query("UPDATE {system} SET weight = %d WHERE name = 'uc_cart_login_flow'", $weight - 1);
+  $weight = db_select('system', 's')
+              ->fields('s', array('weight'))
+              ->condition('name', 'uc_cart', '=')
+              ->execute()
+              ->fetchField();
+  db_update('system')
+    ->fields(array('weight' => $weight - 1))
+    ->condition('name', 'uc_cart_login_flow', '=')
+    ->execute();
 }
